@@ -50,13 +50,13 @@ function PuzzleGame() {
 
   useEffect(() => {
     if (isSolved()) {
-      setTimeout(() => alert("🎉 퍼즐 완성!"), 100);
+      setTimeout(() => alert("🎉 완성!"), 100);
     }
   }, [tiles]);
 
   return (
     <div className="container">
-      <h1>🧩 퍼즐 게임</h1>
+      <h1> Try it </h1>
 
       <div className="grid">
         {tiles.map((tile, index) => (
