@@ -64,19 +64,6 @@ function PuzzleGame() {
     return (emptyRow % 2 === 0) !== (inv % 2 === 0);
   }
 
-  function moveTile(index) {
-    const emptyIndex = tiles.indexOf(null);
-
-    if (getNeighbors(emptyIndex).includes(index)) {
-      const newTiles = [...tiles];
-      [newTiles[index], newTiles[emptyIndex]] =
-        [newTiles[emptyIndex], newTiles[index]];
-
-      setTiles(newTiles);
-      setMoves(moves + 1);
-    }
-  }
-
   function getNeighbors(index) {
     const row = Math.floor(index / size);
     const col = index % size;
@@ -90,6 +77,19 @@ function PuzzleGame() {
     return n;
   }
 
+  function moveTile(index) {
+    const emptyIndex = tiles.indexOf(null);
+
+    if (getNeighbors(emptyIndex).includes(index)) {
+      const newTiles = [...tiles];
+      [newTiles[index], newTiles[emptyIndex]] =
+        [newTiles[emptyIndex], newTiles[index]];
+
+      setTiles(newTiles);
+      setMoves(moves + 1);
+    }
+  }
+
   function isSolved() {
     return tiles.length &&
       tiles.slice(0, size * size - 1)
@@ -100,15 +100,15 @@ function PuzzleGame() {
     if (isSolved()) {
       setRunning(false);
       setTimeout(() => {
-        alert(`🎉 완료!\n난이도: ${size}x${size}\n시간: ${time}s\n이동: ${moves}`);
+        alert(`🎉 완료!\n${size}x${size}\n시간: ${time}s\n이동: ${moves}`);
       }, 100);
     }
   }, [tiles]);
 
   return (
-    <div className="game-wrapper">
-      <div className="card">
-        <h1>Slide Puzzle</h1>
+    <div className="wrapper">
+      <div className="panel">
+        <h1>🧩 Slide Puzzle</h1>
 
         <div className="controls">
           <button onClick={() => startGame(3)}>3x3</button>
@@ -116,24 +116,28 @@ function PuzzleGame() {
           <button onClick={() => startGame(5)}>5x5</button>
         </div>
 
-        <div className="hud">
-          <span>⏱ {time}s</span>
-          <span>🎯 {moves}</span>
+        <div className="info">
+          ⏱ {time}s | 🎯 {moves}
         </div>
 
+        {/* ✅ 퍼즐 보드 */}
         <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${size}, 70px)` }}
+          className="board"
+          style={{ gridTemplateColumns: `repeat(${size}, 80px)` }}
         >
-          {tiles.map((tile, index) => (
-            <div
-              key={index}
-              onClick={() => moveTile(index)}
-              className={`tile ${tile ? "filled" : "empty"}`}
-            >
-              {tile}
-            </div>
-          ))}
+          {tiles.map((tile, index) => {
+            const movable = getNeighbors(tiles.indexOf(null)).includes(index);
+
+            return (
+              <div
+                key={index}
+                onClick={() => moveTile(index)}
+                className={`tile ${tile ? "filled" : "empty"} ${movable ? "movable" : ""}`}
+              >
+                {tile}
+              </div>
+            );
+          })}
         </div>
 
         <button className="restart" onClick={() => startGame(size)}>
@@ -145,29 +149,29 @@ function PuzzleGame() {
       <style>{`
         body {
           margin: 0;
-          background: linear-gradient(135deg, #1e293b, #0f172a);
+          background: #2c2f33;
           font-family: Arial;
         }
 
-        .game-wrapper {
+        .wrapper {
           display: flex;
           justify-content: center;
           align-items: center;
           height: 100vh;
         }
 
-        .card {
-          background: #111827;
+        .panel {
+          background: #3b3f45;
           padding: 25px;
           border-radius: 20px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+          box-shadow: inset 4px 4px 10px #2a2d31,
+                      inset -4px -4px 10px #4a4e55;
           text-align: center;
           color: white;
         }
 
         h1 {
           margin-bottom: 10px;
-          font-size: 24px;
         }
 
         .controls button {
@@ -175,55 +179,69 @@ function PuzzleGame() {
           padding: 8px 12px;
           border-radius: 8px;
           border: none;
-          background: #334155;
+          background: #6b7280;
           color: white;
           cursor: pointer;
-          transition: 0.2s;
+          box-shadow: 2px 2px 4px #222;
         }
 
         .controls button:hover {
           background: #3b82f6;
-          transform: scale(1.05);
         }
 
-        .hud {
+        .info {
           margin: 10px 0;
-          display: flex;
-          justify-content: space-between;
-          font-size: 14px;
-          color: #94a3b8;
+          color: #d1d5db;
         }
 
-        .grid {
+        .board {
           display: grid;
-          gap: 10px;
-          margin-top: 10px;
+          gap: 8px;
+          padding: 10px;
+          background: #1f2937;
+          border-radius: 12px;
+          box-shadow: inset 4px 4px 8px #111,
+                      inset -2px -2px 6px #374151;
         }
 
         .tile {
-          width: 70px;
-          height: 70px;
+          width: 80px;
+          height: 80px;
           display: flex;
           justify-content: center;
           align-items: center;
-          font-size: 20px;
+          font-size: 22px;
           font-weight: bold;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: 0.15s;
+          border-radius: 10px;
+          user-select: none;
         }
 
+        /* ✅ 실제 퍼즐 블록 느낌 */
         .tile.filled {
-          background: linear-gradient(145deg, #3b82f6, #2563eb);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+          background: linear-gradient(145deg, #e5e7eb, #9ca3af);
+          color: #111;
+          box-shadow: 
+            4px 4px 6px #1f2937,
+            -2px -2px 4px #ffffff33,
+            inset -2px -2px 4px #6b7280,
+            inset 2px 2px 4px #fff;
+          cursor: pointer;
         }
 
-        .tile.filled:hover {
-          transform: scale(1.1);
+        .tile.filled:active {
+          box-shadow:
+            inset 3px 3px 6px #1f2937,
+            inset -2px -2px 4px #fff;
+          transform: translateY(2px);
         }
 
         .tile.empty {
-          background: #1f2937;
+          background: #111827;
+        }
+
+        /* ✅ 움직일 수 있는 타일 강조 */
+        .tile.movable {
+          outline: 3px solid #facc15;
         }
 
         .restart {
@@ -235,18 +253,16 @@ function PuzzleGame() {
           background: #22c55e;
           color: white;
           cursor: pointer;
-          transition: 0.2s;
+          box-shadow: 2px 2px 5px #111;
         }
 
         .restart:hover {
           background: #16a34a;
-          transform: scale(1.05);
         }
       `}</style>
     </div>
   );
 }
 
-// 렌더링
 ReactDOM.createRoot(document.getElementById("root"))
   .render(<PuzzleGame />);
