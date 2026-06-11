@@ -1,10 +1,7 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+const { useState, useEffect } = React;
 
-// 간단한 3x3 숫자 퍼즐 (빈칸 이동)
-export default function PuzzleGame() {
+function PuzzleGame() {
   const initialTiles = [1,2,3,4,5,6,7,8,null];
   const [tiles, setTiles] = useState(shuffle(initialTiles));
   const [moves, setMoves] = useState(0);
@@ -35,7 +32,8 @@ export default function PuzzleGame() {
     const emptyIndex = tiles.indexOf(null);
     if (getNeighbors(index).includes(emptyIndex)) {
       const newTiles = [...tiles];
-      [newTiles[index], newTiles[emptyIndex]] = [newTiles[emptyIndex], newTiles[index]];
+      [newTiles[index], newTiles[emptyIndex]] =
+        [newTiles[emptyIndex], newTiles[index]];
       setTiles(newTiles);
       setMoves(moves + 1);
     }
@@ -47,7 +45,7 @@ export default function PuzzleGame() {
   }
 
   function isSolved() {
-    return tiles.slice(0, 8).every((val, idx) => val === idx + 1);
+    return tiles.slice(0, 8).every((v, i) => v === i + 1);
   }
 
   useEffect(() => {
@@ -57,29 +55,28 @@ export default function PuzzleGame() {
   }, [tiles]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">🧩 퍼즐 게임</h1>
+    <div className="container">
+      <h1>🧩 퍼즐 게임</h1>
 
-      <Card className="p-4">
-        <CardContent>
-          <div className="grid grid-cols-3 gap-2">
-            {tiles.map((tile, index) => (
-              <div
-                key={index}
-                onClick={() => moveTile(index)}
-                className={`w-20 h-20 flex items-center justify-center text-xl font-bold rounded-xl cursor-pointer
-                  ${tile ? "bg-blue-500 text-white" : "bg-gray-300"}`}
-              >
-                {tile}
-              </div>
-            ))}
+      <div className="grid">
+        {tiles.map((tile, index) => (
+          <div
+            key={index}
+            onClick={() => moveTile(index)}
+            className={`tile ${tile ? "filled" : "empty"}`}
+          >
+            {tile}
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
 
-      <div className="mt-4 text-lg">이동 횟수: {moves}</div>
+      <div>이동 횟수: {moves}</div>
 
-      <Button className="mt-4" onClick={resetGame}>다시 시작</Button>
+      <button onClick={resetGame}>다시 시작</button>
     </div>
   );
 }
+
+// ✅ React 렌더링
+ReactDOM.createRoot(document.getElementById("root"))
+  .render(<PuzzleGame />);
