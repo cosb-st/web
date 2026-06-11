@@ -8,7 +8,10 @@ function PuzzleGame() {
   const [time, setTime] = useState(0);
   const [running, setRunning] = useState(false);
 
-  // ✅ 게임 시작
+  useEffect(() => {
+    startGame(3);
+  }, []);
+
   function startGame(newSize) {
     const arr = [...Array(newSize * newSize - 1).keys()]
       .map(n => n + 1)
@@ -23,12 +26,6 @@ function PuzzleGame() {
     setRunning(true);
   }
 
-  // ✅ 최초 실행
-  useEffect(() => {
-    startGame(3);
-  }, []);
-
-  // ✅ 타이머
   useEffect(() => {
     if (!running) return;
 
@@ -39,7 +36,6 @@ function PuzzleGame() {
     return () => clearInterval(timer);
   }, [running]);
 
-  // ✅ 셔플 (항상 풀 수 있는 상태)
   function shuffle(array, size) {
     let arr = [...array];
 
@@ -53,7 +49,6 @@ function PuzzleGame() {
     return arr;
   }
 
-  // ✅ 해결 가능 여부
   function isSolvable(arr, size) {
     let inv = 0;
 
@@ -69,19 +64,6 @@ function PuzzleGame() {
     return (emptyRow % 2 === 0) !== (inv % 2 === 0);
   }
 
-  function getNeighbors(index) {
-    const row = Math.floor(index / size);
-    const col = index % size;
-    const n = [];
-
-    if (row > 0) n.push(index - size);
-    if (row < size - 1) n.push(index + size);
-    if (col > 0) n.push(index - 1);
-    if (col < size - 1) n.push(index + 1);
-
-    return n;
-  }
-
   function moveTile(index) {
     const emptyIndex = tiles.indexOf(null);
 
@@ -93,6 +75,19 @@ function PuzzleGame() {
       setTiles(newTiles);
       setMoves(moves + 1);
     }
+  }
+
+  function getNeighbors(index) {
+    const row = Math.floor(index / size);
+    const col = index % size;
+    const n = [];
+
+    if (row > 0) n.push(index - size);
+    if (row < size - 1) n.push(index + size);
+    if (col > 0) n.push(index - 1);
+    if (col < size - 1) n.push(index + 1);
+
+    return n;
   }
 
   function isSolved() {
@@ -111,44 +106,147 @@ function PuzzleGame() {
   }, [tiles]);
 
   return (
-    <div className="container">
-      <h1> Try it </h1>
+    <div className="game-wrapper">
+      <div className="card">
+        <h1>Slide Puzzle</h1>
 
-      {/* ✅ 난이도 선택 */}
-      <div style={{ marginBottom: "10px" }}>
-        <button onClick={() => startGame(3)}>3x3</button>
-        <button onClick={() => startGame(4)}>4x4</button>
-        <button onClick={() => startGame(5)}>5x5</button>
+        <div className="controls">
+          <button onClick={() => startGame(3)}>3x3</button>
+          <button onClick={() => startGame(4)}>4x4</button>
+          <button onClick={() => startGame(5)}>5x5</button>
+        </div>
+
+        <div className="hud">
+          <span>⏱ {time}s</span>
+          <span>🎯 {moves}</span>
+        </div>
+
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: `repeat(${size}, 70px)` }}
+        >
+          {tiles.map((tile, index) => (
+            <div
+              key={index}
+              onClick={() => moveTile(index)}
+              className={`tile ${tile ? "filled" : "empty"}`}
+            >
+              {tile}
+            </div>
+          ))}
+        </div>
+
+        <button className="restart" onClick={() => startGame(size)}>
+          다시 시작
+        </button>
       </div>
 
-      {/* ✅ 상태 */}
-      <div style={{ marginBottom: "10px" }}>
-        ⏱ {time}s | 이동 {moves}
-      </div>
+      {/* ✅ 스타일 */}
+      <style>{`
+        body {
+          margin: 0;
+          background: linear-gradient(135deg, #1e293b, #0f172a);
+          font-family: Arial;
+        }
 
-      {/* ✅ 퍼즐 */}
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: `repeat(${size}, 80px)`
-        }}
-      >
-        {tiles.map((tile, index) => (
-          <div
-            key={index}
-            onClick={() => moveTile(index)}
-            className={`tile ${tile ? "filled" : "empty"}`}
-          >
-            {tile}
-          </div>
-        ))}
-      </div>
+        .game-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
 
-      <button onClick={() => startGame(size)}>다시 시작</button>
+        .card {
+          background: #111827;
+          padding: 25px;
+          border-radius: 20px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+          text-align: center;
+          color: white;
+        }
+
+        h1 {
+          margin-bottom: 10px;
+          font-size: 24px;
+        }
+
+        .controls button {
+          margin: 5px;
+          padding: 8px 12px;
+          border-radius: 8px;
+          border: none;
+          background: #334155;
+          color: white;
+          cursor: pointer;
+          transition: 0.2s;
+        }
+
+        .controls button:hover {
+          background: #3b82f6;
+          transform: scale(1.05);
+        }
+
+        .hud {
+          margin: 10px 0;
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          color: #94a3b8;
+        }
+
+        .grid {
+          display: grid;
+          gap: 10px;
+          margin-top: 10px;
+        }
+
+        .tile {
+          width: 70px;
+          height: 70px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 20px;
+          font-weight: bold;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: 0.15s;
+        }
+
+        .tile.filled {
+          background: linear-gradient(145deg, #3b82f6, #2563eb);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .tile.filled:hover {
+          transform: scale(1.1);
+        }
+
+        .tile.empty {
+          background: #1f2937;
+        }
+
+        .restart {
+          margin-top: 15px;
+          padding: 10px;
+          width: 100%;
+          border-radius: 10px;
+          border: none;
+          background: #22c55e;
+          color: white;
+          cursor: pointer;
+          transition: 0.2s;
+        }
+
+        .restart:hover {
+          background: #16a34a;
+          transform: scale(1.05);
+        }
+      `}</style>
     </div>
   );
 }
 
-// ✅ 렌더링
+// 렌더링
 ReactDOM.createRoot(document.getElementById("root"))
   .render(<PuzzleGame />);
