@@ -17,21 +17,47 @@
 
     <div id="root"></div>
 
-    <script type="text/babel" src="./sliding.jsx"></script>
-    <script type="text/babel" src="./tetris.jsx"></script>
+    <script type="text/babel" src="sliding.jsx"></script>
+    <script type="text/babel" src="tetris.jsx"></script>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         function App() {
-            // 현재 선택된 게임 상태 (null이면 메인 리스트)
             const [currentGame, setCurrentGame] = useState(null);
+            const [games, setGames] = useState([]);
+            const [loading, setLoading] = useState(true);
 
-            // 게임 리스트 데이터 (추후 다른 게임이 추가되면 여기에 객체 추가)
-            const games = [
-                { id: 'sliding', title: '🧩 슬라이딩 퍼즐', description: '숫자를 순서대로 맞추는 클래식 퍼즐 게임', component: <SlidingPuzzle goBack={() => setCurrentGame(null)} /> },
-                { id: 'tetris', title: '🧱 테트리스', description: '내려오는 블록을 빈틈없이 채워 한 줄을 제거하세요!', component: <Tetris goBack={() => setCurrentGame(null)} /> }
-            ];
+            useEffect(() => {
+                // 외부 파일(sliding.jsx, tetris.jsx)이 전역 window에 완전히 로드되었는지 확인 후 셋팅
+                const timer = setTimeout(() => {
+                    setGames([
+                        { 
+                            id: 'sliding', 
+                            title: '🧩 슬라이딩 퍼즐', 
+                            description: '숫자를 순서대로 맞추는 클래식 퍼즐 게임', 
+                            component: window.SlidingPuzzle ? <window.SlidingPuzzle goBack={() => setCurrentGame(null)} /> : <div>게임 로딩 실패</div>
+                        },
+                        { 
+                            id: 'tetris', 
+                            title: '🧱 테트리스', 
+                            description: '내려오는 블록을 빈틈없이 채워 한 줄을 제거하세요!', 
+                            component: window.Tetris ? <window.Tetris goBack={() => setCurrentGame(null)} /> : <div>게임 로딩 실패</div>
+                        }
+                    ]);
+                    setLoading(false);
+                }, 100); // 컴포넌트 등록을 위한 아주 짧은 대기 시간
+
+                return () => clearTimeout(timer);
+            }, []);
+
+            if (loading) {
+                return (
+                    <div class="flex items-center justify-center min-h-screen">
+                        <p class="text-xl font-bold text-slate-500 animate-pulse">게임 허브 로딩 중...</p>
+                    </div>
+                );
+            }
 
             return (
                 <div class="container mx-auto px-4 py-8 max-w-4xl">
@@ -43,7 +69,7 @@
                     </header>
 
                     {currentGame === null ? (
-                        /* 게임 선택 리스트 */
+                        /* 게임 선택 리스트 (React에서는 class 대신 className을 쓰는 것이 안전하지만 CDN 환경 편의상 유지, 단 속성 바인딩 정상화) */
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {games.map(game => (
                                 <div key={game.id} class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-slate-200 flex flex-col justify-between">
@@ -62,7 +88,7 @@
                         </div>
                     ) : (
                         /* 선택된 게임 화면 렌더링 */
-                        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 animate-fade-in">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
                             {games.find(g => g.id === currentGame)?.component}
                         </div>
                     )}
